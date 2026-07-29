@@ -1,0 +1,15 @@
+{
+"name": "Calisthenics Tracker",
+"short_name": "Calisthenics",
+"display": "standalone",
+"start_url": "/",
+"background_color": "#000000",
+"theme_color": "#000000",
+"icons": [
+ {
+  "src": "/static/icon.png",
+  "sizes": "512x512",
+  "type": "image/png"
+ }
+]
+}

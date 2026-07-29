@@ -2,6 +2,20 @@ import streamlit as st
 import sqlite3
 from datetime import date
 
+st.set_page_config(
+    page_title="bicep",
+    page_icon="💪",
+    layout="centered"
+)
+
+st.markdown("""
+<link rel="manifest" href="/app/static/manifest.json">
+
+<meta name="theme-color" content="#000000">
+
+""", unsafe_allow_html=True)
+
+
 conn = sqlite3.connect("workouts.db")
 cursor = conn.cursor()
 

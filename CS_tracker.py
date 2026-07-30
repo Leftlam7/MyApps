@@ -2,12 +2,14 @@ import streamlit as st
 import sqlite3
 from datetime import date
 
+##  Configuring the page
 st.set_page_config(
     page_title="bicep",
     page_icon="💪",
     layout="centered"
 )
 
+#accept html
 st.markdown("""
 <link rel="manifest" href="/app/static/manifest.json">
 
@@ -15,10 +17,11 @@ st.markdown("""
 
 """, unsafe_allow_html=True)
 
-
+# Connecting to the database
 conn = sqlite3.connect("workouts.db")
-cursor = conn.cursor()
+cursor = conn.cursor() #create cursor
 
+#create SQL table
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS workouts (
     id INTEGER PRIMARY KEY,
@@ -31,65 +34,30 @@ CREATE TABLE IF NOT EXISTS workouts (
 )
 """)
 
-conn.commit()
+conn.commit() #saves changes after creating table
 
 
 st.title("💪 Calisthenics Tracker")
 
 
-push_exercises = [
-    "Push-ups",
-    "Dips",
-    "Pike Push-ups",
-    "Pseudo Planche Push-ups",
-    "Handstand Push-ups"
-]
+push_exercises = ["Push-ups", "Dips", "Pike Push-ups", "Pseudo Planche Push-ups", "Handstand Push-ups"]
 
-pull_exercises = [
-    "Pull-ups",
-    "Chin-ups",
-    "Australian Rows",
-    "Front Lever Raises"
-]
+pull_exercises = ["Pull-ups", "Chin-ups", "Australian Rows", "Front Lever Raises"]
 
-leg_exercises = [
-    "Squats",
-    "Bulgarian Split Squats",
-    "Pistol Squats",
-    "Nordic Curls",
-    "Calf Raises"
-]
+leg_exercises = ["Squats", "Bulgarian Split Squats", "Pistol Squats", "Nordic Curls", "Calf Raises"]
 
-push_tab, pull_tab, legs_tab = st.tabs(
-    ["Push", "Pull", "Legs"]
-)
+push_tab, pull_tab, legs_tab = st.tabs(["Push", "Pull", "Legs"])
 
 with push_tab:
-    exercise = st.selectbox(
-        "Exercise",
-        push_exercises,
-        key="push"
-    )
+    exercise = st.selectbox("Exercise", push_exercises, key="push")
 
 with pull_tab:
-    exercise = st.selectbox(
-        "Exercise",
-        pull_exercises,
-        key="pull"
-    )
+    exercise = st.selectbox("Exercise", pull_exercises, key="pull")
 
 with legs_tab:
-    exercise = st.selectbox(
-        "Exercise",
-        leg_exercises,
-        key="legs"
-    )
+    exercise = st.selectbox("Exercise", leg_exercises, key="legs")
 
-sets = st.number_input(
-    "Sets",
-    min_value=1,
-    step=1
-)
+sets = st.number_input("Sets", min_value=1, step=1)
 
 reps = st.number_input(
     "Reps",

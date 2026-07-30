@@ -79,6 +79,16 @@ conn.commit()
 
 st.title("💪 Calisthenics Tracker")
 
+page = st.sidebar.radio(
+    "Menu",
+    [
+        "Log Workout",
+        "History",
+        "Manage Exercises",
+        "Statistics"
+    ]
+)
+
 push_exercises = [
     row[0]
     for row in cursor.execute(
@@ -100,74 +110,137 @@ leg_exercises = [
     ).fetchall()
 ]
 
-push_tab, pull_tab, legs_tab = st.tabs(["Push", "Pull", "Legs"])
+if page == "Log Workout":
 
-with push_tab:
-    exercise = st.selectbox("Exercise", push_exercises, key="push")
+    st.subheader("Today's Workout")
 
-with pull_tab:
-    exercise = st.selectbox("Exercise", pull_exercises, key="pull")
-
-with legs_tab:
-    exercise = st.selectbox("Exercise", leg_exercises, key="legs")
-
-sets = st.number_input("Sets", min_value=1, step=1)
-
-reps = st.number_input("Reps", min_value=1, step=1)
-
-weight = st.number_input("Extra weight (kg)", min_value=0.0, step=0.5)
-
-notes = st.text_area("Notes")
-
-#a new row is aded when saved
-if st.button("Save Workout"):
-    cursor.execute(
-        """INSERT INTO workouts (date, exercise, sets, reps, weight, notes)
-        VALUES (?, ?, ?, ?, ?, ?)
-        """,
-        (str(date.today()), exercise, sets, reps, weight, notes)
+    push_tab, pull_tab, legs_tab = st.tabs(
+        ["Push", "Pull", "Legs"]
     )
-    conn.commit() #saves permantly
-    st.success("Workout saved!")
+
+    with push_tab:
+        exercise = st.selectbox(
+            "Exercise",
+            push_exercises,
+            key="push"
+        )
+
+    with pull_tab:
+        exercise = st.selectbox(
+            "Exercise",
+            pull_exercises,
+            key="pull"
+        )
+
+    with legs_tab:
+        exercise = st.selectbox(
+            "Exercise",
+            leg_exercises,
+            key="legs"
+        )
 
 
-st.subheader("History")
+    sets = st.number_input(
+        "Sets",
+        min_value=1,
+        step=1
+    )
 
-data = cursor.execute(
-    "SELECT * FROM workouts ORDER BY id DESC"
-).fetchall()
+    reps = st.number_input(
+        "Reps",
+        min_value=1,
+        step=1
+    )
 
-st.write(data)
+    weight = st.number_input(
+        "Extra weight (kg)",
+        min_value=0.0,
+        step=0.5
+    )
+
+    notes = st.text_area("Notes")
+
+
+    if st.button("Save Workout"):
+
+        cursor.execute(
+            """
+            INSERT INTO workouts
+            (date, exercise, sets, reps, weight, notes)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                str(date.today()),
+                exercise,
+                sets,
+                reps,
+                weight,
+                notes
+            )
+        )
+
+        conn.commit()
+
+        st.success("Workout saved!")
+
+
+if page == "History":
+
+    st.subheader("Workout History")
+
+    data = cursor.execute(
+        "SELECT * FROM workouts ORDER BY id DESC"
+    ).fetchall()
+
+    st.write(data)
 
 st.divider()
 
-st.subheader("Manage Exercises")
+if page == "Manage Exercises":
 
-new_name = st.text_input("Exercise name")
+    st.subheader("Manage Exercises")
 
-new_category = st.selectbox(
-    "Category",
-    ["Push", "Pull", "Legs"]
-)
+    new_name = st.text_input("Exercise name")
 
-if st.button("Add Exercise"):
-    cursor.execute(
-        """
-        INSERT OR IGNORE INTO exercises (name, category)
-        VALUES (?, ?)
-        """,
-        (new_name, new_category),
+    new_category = st.selectbox(
+        "Category",
+        ["Push", "Pull", "Legs"]
     )
 
-    conn.commit()
-    st.success("Exercise added!")
+    if st.button("Add Exercise"):
+        cursor.execute(
+            """
+            INSERT OR IGNORE INTO exercises 
+            (name, category)
+            VALUES (?, ?)
+            """,
+            (new_name, new_category)
+        )
 
-exercise_data = cursor.execute(
-    """
-    SELECT name, category
-    FROM exercises
-    ORDER BY category, name
-    """
-).fetchall()
+        conn.commit()
 
-st.table(exercise_data)
+        st.success("Exercise added!")
+
+
+    exercise_data = cursor.execute(
+        """
+        SELECT name, category
+        FROM exercises
+        ORDER BY category, name
+        """
+    ).fetchall()
+
+    st.table(exercise_data)
+
+if page == "Statistics":
+
+    st.subheader("📊 Statistics")
+
+    total_workouts = cursor.execute(
+        "SELECT COUNT(*) FROM workouts"
+    ).fetchone()[0]
+
+    st.metric(
+        "Total Workouts",
+        total_workouts
+    )

@@ -37,7 +37,53 @@ conn.commit()
 st.title("💪 Calisthenics Tracker")
 
 
-exercise = st.text_input("Exercise")
+push_exercises = [
+    "Push-ups",
+    "Dips",
+    "Pike Push-ups",
+    "Pseudo Planche Push-ups",
+    "Handstand Push-ups"
+]
+
+pull_exercises = [
+    "Pull-ups",
+    "Chin-ups",
+    "Australian Rows",
+    "Front Lever Raises"
+]
+
+leg_exercises = [
+    "Squats",
+    "Bulgarian Split Squats",
+    "Pistol Squats",
+    "Nordic Curls",
+    "Calf Raises"
+]
+
+push_tab, pull_tab, legs_tab = st.tabs(
+    ["Push", "Pull", "Legs"]
+)
+
+with push_tab:
+    exercise = st.selectbox(
+        "Exercise",
+        push_exercises,
+        key="push"
+    )
+
+with pull_tab:
+    exercise = st.selectbox(
+        "Exercise",
+        pull_exercises,
+        key="pull"
+    )
+
+with legs_tab:
+    exercise = st.selectbox(
+        "Exercise",
+        leg_exercises,
+        key="legs"
+    )
 
 sets = st.number_input(
     "Sets",

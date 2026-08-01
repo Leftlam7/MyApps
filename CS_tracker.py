@@ -63,8 +63,13 @@ default_exercises = [
     ("Calf Raises", "Legs"),
 
     ("Plank", "Core"),
-    ("Bike curls", "Core"),
-    ("Bar stand", "Core"),
+    ("Side Plank", "Core"),
+    ("Hollow Body Hold", "Core"),
+    ("Leg Raises", "Core"),
+    ("Hanging Leg Raises", "Core"),
+    ("L-Sit", "Core"),
+    ("Dragon Flag", "Core"),
+    ("Bicycle Crunches", "Core"),
 ]
 
 cursor.executemany(
@@ -178,6 +183,36 @@ if page == "Log Workout":
                 f"@ {item['weight']} kg"
                 f"⏱️ {item['duration']}s"
             )
+
+if st.session_state.current_workout:
+
+    if st.button("💾 Save Workout"):
+
+        today = date.today().isoformat()
+
+        for item in st.session_state.current_workout:
+            cursor.execute(
+                """
+                INSERT INTO workouts
+                (date, exercise, sets, reps, weight, duration, notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    today,
+                    item["exercise"],
+                    item["sets"],
+                    item["reps"],
+                    item["weight"],
+                    item["duration"],
+                    item["notes"],
+                )
+            )
+
+        conn.commit()
+
+        st.session_state.current_workout = []
+
+        st.success("Workout saved! 💪")
 
 if page == "History":
 

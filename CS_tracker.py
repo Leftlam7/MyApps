@@ -3,11 +3,7 @@ import sqlite3
 from datetime import date
 
 ##  Configuring the page
-st.set_page_config(
-    page_title="bicep",
-    page_icon="💪",
-    layout="centered"
-)
+st.set_page_config(page_title="SthenoS", page_icon="💪", layout="centered")
 
 #accept html
 st.markdown("""
@@ -76,7 +72,9 @@ cursor.executemany(
 
 conn.commit()
 
-
+if "current_workout" not in st.session_state:
+    st.session_state.current_workout = []
+    
 st.title("💪 Calisthenics Tracker")
 
 page = st.sidebar.radio(
@@ -119,70 +117,44 @@ if page == "Log Workout":
     )
 
     with push_tab:
-        exercise = st.selectbox(
-            "Exercise",
-            push_exercises,
-            key="push"
-        )
+        exercise = st.selectbox("Exercise", push_exercises, key="push")
 
     with pull_tab:
-        exercise = st.selectbox(
-            "Exercise",
-            pull_exercises,
-            key="pull"
-        )
+        exercise = st.selectbox("Exercise", pull_exercises, key="pull"        )
 
     with legs_tab:
-        exercise = st.selectbox(
-            "Exercise",
-            leg_exercises,
-            key="legs"
-        )
+        exercise = st.selectbox("Exercise", leg_exercises, key="legs")
 
 
-    sets = st.number_input(
-        "Sets",
-        min_value=1,
-        step=1
-    )
+    sets = st.number_input("Sets", min_value=1, step=1)
 
-    reps = st.number_input(
-        "Reps",
-        min_value=1,
-        step=1
-    )
+    reps = st.number_input("Reps", min_value=1, step=1)
 
-    weight = st.number_input(
-        "Extra weight (kg)",
-        min_value=0.0,
-        step=0.5
-    )
+    weight = st.number_input("Extra weight (kg)", min_value=0.0, step=0.5)
 
     notes = st.text_area("Notes")
 
 
-    if st.button("Save Workout"):
-
-        cursor.execute(
-            """
-            INSERT INTO workouts
-            (date, exercise, sets, reps, weight, notes)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """,
-            (
-                str(date.today()),
-                exercise,
-                sets,
-                reps,
-                weight,
-                notes
-            )
+    if st.button("➕ Add Exercise"):
+        st.session_state.current_workout.append(
+            {"exercise": exercise, "sets": sets, "reps": reps, "weight": weight, "notes": notes,}
         )
 
-        conn.commit()
+    st.success(f"{exercise} added to workout!")
 
-        st.success("Workout saved!")
+st.divider()
 
+st.subheader("Current Workout")
+
+if not st.session_state.current_workout:
+    st.info("No exercises added yet.")
+else:
+    for i, item in enumerate(st.session_state.current_workout, start=1):
+        st.write(
+            f"{i}. **{item['exercise']}** — "
+            f"{item['sets']} × {item['reps']} "
+            f"@ {item['weight']} kg"
+        )
 
 if page == "History":
 

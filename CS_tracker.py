@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS workouts (
     sets INTEGER,
     reps INTEGER,
     weight REAL,
+    duration REAL,
     notes TEXT
 )
 """)
@@ -60,6 +61,10 @@ default_exercises = [
     ("Pistol Squats", "Legs"),
     ("Nordic Curls", "Legs"),
     ("Calf Raises", "Legs"),
+
+    ("Plank", "Core"),
+    ("Bike curls", "Core"),
+    ("Bar stand", "Core"),
 ]
 
 cursor.executemany(
@@ -108,12 +113,19 @@ leg_exercises = [
     ).fetchall()
 ]
 
+core_exercises = [
+    row[0]
+    for row in cursor.execute(
+        "SELECT name FROM exercises WHERE category='Core'"
+    ).fetchall()
+]
+
 if page == "Log Workout":
 
     st.subheader("Today's Workout")
 
-    push_tab, pull_tab, legs_tab = st.tabs(
-        ["Push", "Pull", "Legs"]
+    push_tab, pull_tab, legs_tab, core_tab = st.tabs(
+        ["Push", "Pull", "Legs", "Core"]
     )
 
     with push_tab:
@@ -125,6 +137,8 @@ if page == "Log Workout":
     with legs_tab:
         exercise = st.selectbox("Exercise", leg_exercises, key="legs")
 
+    with core_tab:
+        exercise = st.selectbox("Exercise", core_exercises, key="core")
 
     sets = st.number_input("Sets", min_value=1, step=1)
 
@@ -132,19 +146,21 @@ if page == "Log Workout":
 
     weight = st.number_input("Extra weight (kg)", min_value=0.0, step=0.5)
 
+    duration = st.number_input("Executing duration (s)", min_value=0.0, step=1)
+    
     notes = st.text_area("Notes")
 
 
     if st.button("➕ Add Exercise"):
         st.session_state.current_workout.append(
-            {"exercise": exercise, "sets": sets, "reps": reps, "weight": weight, "notes": notes,}
+            {"exercise": exercise, "sets": sets, "reps": reps, "weight": weight, "duration": duration, "notes": notes,}
         )
 
-    st.success(f"{exercise} added to workout!")
+        st.success(f"{exercise} added to workout!")
 
-st.divider()
+    st.divider()
 
-st.subheader("Current Workout")
+    st.subheader("Current Workout")
 
 if not st.session_state.current_workout:
     st.info("No exercises added yet.")
@@ -176,7 +192,7 @@ if page == "Manage Exercises":
 
     new_category = st.selectbox(
         "Category",
-        ["Push", "Pull", "Legs"]
+        ["Push", "Pull", "Legs", "Core"]
     )
 
     if st.button("Add Exercise"):

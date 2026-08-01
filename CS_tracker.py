@@ -146,7 +146,7 @@ if page == "Log Workout":
 
     weight = st.number_input("Extra weight (kg)", min_value=0.0, step=0.5)
 
-    duration = st.number_input("Executing duration (s)", min_value=0.0, step=1)
+    duration = st.number_input("Executing duration (s)", min_value=0.0, step=1.0)
     
     notes = st.text_area("Notes")
 

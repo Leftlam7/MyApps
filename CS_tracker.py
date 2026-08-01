@@ -162,15 +162,16 @@ if page == "Log Workout":
 
     st.subheader("Current Workout")
 
-if not st.session_state.current_workout:
-    st.info("No exercises added yet.")
-else:
-    for i, item in enumerate(st.session_state.current_workout, start=1):
-        st.write(
-            f"{i}. **{item['exercise']}** — "
-            f"{item['sets']} × {item['reps']} "
-            f"@ {item['weight']} kg"
-        )
+    if not st.session_state.current_workout:
+        st.info("No exercises added yet.")
+    else:
+        for i, item in enumerate(st.session_state.current_workout, start=1):
+            st.write(
+                f"{i}. **{item['exercise']}** — "
+                f"{item['sets']} × {item['reps']} "
+                f"@ {item['weight']} kg"
+                f"⏱️ {item['duration']}s"
+            )
 
 if page == "History":
 

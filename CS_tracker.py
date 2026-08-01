@@ -128,17 +128,23 @@ if page == "Log Workout":
         ["Push", "Pull", "Legs", "Core"]
     )
 
-    with push_tab:
-        exercise = st.selectbox("Exercise", push_exercises, key="push")
-
-    with pull_tab:
-        exercise = st.selectbox("Exercise", pull_exercises, key="pull"        )
-
-    with legs_tab:
-        exercise = st.selectbox("Exercise", leg_exercises, key="legs")
-
-    with core_tab:
-        exercise = st.selectbox("Exercise", core_exercises, key="core")
+    category = st.radio(
+        "Category",
+        ["Push", "Pull", "Legs", "Core"],
+        horizontal=True
+    )
+    
+    if category == "Push":
+        exercise = st.selectbox("Exercise", push_exercises)
+    
+    elif category == "Pull":
+        exercise = st.selectbox("Exercise", pull_exercises)
+    
+    elif category == "Legs":
+        exercise = st.selectbox("Exercise", leg_exercises)
+    
+    else:
+        exercise = st.selectbox("Exercise", core_exercises)
 
     sets = st.number_input("Sets", min_value=1, step=1)
 

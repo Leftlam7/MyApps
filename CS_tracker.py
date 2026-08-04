@@ -320,6 +320,7 @@ if page == "History":
             SELECT date, performance
             FROM workouts
             WHERE exercise = ?
+            AND performance IS NOT NULL
             ORDER BY date
             """,
             (exercise,)

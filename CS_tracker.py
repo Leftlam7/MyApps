@@ -20,15 +20,30 @@ CREATE TABLE IF NOT EXISTS workouts (
     id INTEGER PRIMARY KEY,
     date TEXT,
     exercise TEXT,
+    category TEXT,
     sets INTEGER,
     reps INTEGER,
     weight REAL,
     duration REAL,
+    performance REAL,
     notes TEXT
 )
 """)
 
 conn.commit() #saves changes after creating table
+
+# Add new columns if they don't exist
+try:
+    cursor.execute("ALTER TABLE workouts ADD COLUMN category TEXT")
+except sqlite3.OperationalError:
+    pass
+
+try:
+    cursor.execute("ALTER TABLE workouts ADD COLUMN performance REAL")
+except sqlite3.OperationalError:
+    pass
+
+conn.commit()
 
 #create SQLite exersise table
 cursor.execute("""
@@ -78,6 +93,50 @@ cursor.executemany(
 )
 
 conn.commit()
+
+def calculate_performance(category, sets, reps, weight, duration):
+
+    # normalize values
+    sets_score = sets / 5
+    reps_score = reps / 50
+    weight_score = weight / 50
+    duration_score = duration / 120
+
+    if category == "Push":
+        score = (
+            0.25 * sets_score +
+            0.45 * reps_score +
+            0.20 * weight_score +
+            0.10 * duration_score
+        )
+
+    elif category == "Pull":
+        score = (
+            0.25 * sets_score +
+            0.40 * reps_score +
+            0.25 * weight_score +
+            0.10 * duration_score
+        )
+
+    elif category == "Legs":
+        score = (
+            0.25 * sets_score +
+            0.50 * reps_score +
+            0.15 * weight_score +
+            0.10 * duration_score
+        )
+
+    elif category == "Core":
+        score = (
+            0.20 * sets_score +
+            0.20 * reps_score +
+            0.60 * duration_score
+        )
+
+    else:
+        score = 0
+
+    return round(score * 100, 2)
 
 if "current_workout" not in st.session_state:
     st.session_state.current_workout = []

@@ -153,13 +153,22 @@ if page == "Log Workout":
     if not st.session_state.current_workout:
         st.info("No exercises added yet.")
     else:
-        for i, item in enumerate(st.session_state.current_workout, start=1):
+        for i, item in enumerate(st.session_state.current_workout):
+
+        col1, col2 = st.columns([6, 1])
+    
+        with col1:
             st.write(
-                f"{i}. **{item['exercise']}** — "
+                f"**{i+1}. {item['exercise']}** — "
                 f"{item['sets']} × {item['reps']} "
-                f"@ {item['weight']} kg"
-                f"⏱️ {item['duration']}s"
+                f"@ {item['weight']} kg "
+                f"⏱️ {item['duration']} s"
             )
+    
+        with col2:
+            if st.button("🗑️", key=f"remove_{i}"):
+                st.session_state.current_workout.pop(i)
+                st.rerun()
 
     if st.session_state.current_workout:
     

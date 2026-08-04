@@ -330,7 +330,7 @@ if page == "History":
             st.subheader(f"{exercise} Progress")
 
             dates = [row[0] for row in history]
-            scores = [row[1] for row in history]
+            scores = [row[1] for row in history if row[1] is not None]
             
             # Statistics
             best_score = max(scores)

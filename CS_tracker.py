@@ -124,8 +124,7 @@ if page == "Log Workout":
         "Legs": leg_exercises,
         "Core": core_exercises,
     }
-    
-    tabs = st.tabs(categories.keys())
+    tabs = st.tabs(list(categories.keys()))
     
     for tab, (category, exercises) in zip(tabs, categories.items()):
         with tab:

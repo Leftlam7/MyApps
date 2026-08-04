@@ -4,13 +4,10 @@ from datetime import date
 
 ##  Configuring the page
 st.set_page_config(page_title="SthenoS", page_icon="💪", layout="centered")
-
 #accept html
 st.markdown("""
 <link rel="manifest" href="/app/static/manifest.json">
-
 <meta name="theme-color" content="#000000">
-
 """, unsafe_allow_html=True)
 
 # Connecting to the database
@@ -87,15 +84,8 @@ if "current_workout" not in st.session_state:
     
 st.title("💪 Calisthenics Tracker")
 
-page = st.sidebar.radio(
-    "Menu",
-    [
-        "Log Workout",
-        "History",
-        "Manage Exercises",
-        "Statistics"
-    ]
-)
+page = st.sidebar.radio("Menu",
+    ["Log Workout", "History", "Manage Exercises", "Statistics"])
 
 push_exercises = [
     row[0]
@@ -126,50 +116,38 @@ core_exercises = [
 ]
 
 if page == "Log Workout":
-
     st.subheader("Today's Workout")
 
-    push_tab, pull_tab, legs_tab, core_tab = st.tabs(
-        ["Push", "Pull", "Legs", "Core"]
-    )
-
-    category = st.radio(
-        "Category",
-        ["Push", "Pull", "Legs", "Core"],
-        horizontal=True
-    )
+    categories = {
+        "Push": push_exercises,
+        "Pull": pull_exercises,
+        "Legs": leg_exercises,
+        "Core": core_exercises,
+    }
     
-    if category == "Push":
-        exercise = st.selectbox("Exercise", push_exercises)
+    tabs = st.tabs(categories.keys())
     
-    elif category == "Pull":
-        exercise = st.selectbox("Exercise", pull_exercises)
+    for tab, (category, exercises) in zip(tabs, categories.items()):
+        with tab:
+            exercise = st.selectbox("Exercise", exercises, key=f"{category}_exercise")
+            sets = st.number_input("Sets", min_value=1, step=1, key=f"{category}_sets")
+
+            reps = st.number_input("Reps", min_value=1, step=1, key=f"{category}_reps")
+            
+            weight = st.number_input("Weight (kg)", min_value=0.0, key=f"{category}_weight")
     
-    elif category == "Legs":
-        exercise = st.selectbox("Exercise", leg_exercises)
-    
-    else:
-        exercise = st.selectbox("Exercise", core_exercises)
+            duration = st.number_input("Executing duration (s)", min_value=0.0, step=1.0, key=f"{category}_duration")
+            
+            notes = st.text_area("Notes", key=f"{category}_notes")
+   
+            if st.button("➕ Add Exercise"):
+                st.session_state.current_workout.append(
+                    {"exercise": exercise, "sets": sets, "reps": reps, "weight": weight, "duration": duration, "notes": notes,}
+                )
+        
+                st.success(f"{exercise} added to workout!")
 
-    sets = st.number_input("Sets", min_value=1, step=1)
-
-    reps = st.number_input("Reps", min_value=1, step=1)
-
-    weight = st.number_input("Extra weight (kg)", min_value=0.0, step=0.5)
-
-    duration = st.number_input("Executing duration (s)", min_value=0.0, step=1.0)
-    
-    notes = st.text_area("Notes")
-
-
-    if st.button("➕ Add Exercise"):
-        st.session_state.current_workout.append(
-            {"exercise": exercise, "sets": sets, "reps": reps, "weight": weight, "duration": duration, "notes": notes,}
-        )
-
-        st.success(f"{exercise} added to workout!")
-
-    st.divider()
+    st.divider() #adds a visual line
 
     st.subheader("Current Workout")
 

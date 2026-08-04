@@ -236,19 +236,36 @@ if page == "Log Workout":
             today = date.today().isoformat()
     
             for item in st.session_state.current_workout:
+                # Get exercise category
+                category = cursor.execute(
+                    "SELECT category FROM exercises WHERE name = ?",
+                    (item["exercise"],)
+                ).fetchone()[0]
+            
+                # Calculate performance score
+                performance = calculate_performance(
+                    category,
+                    item["sets"],
+                    item["reps"],
+                    item["weight"],
+                    item["duration"]
+                )
+
                 cursor.execute(
                     """
                     INSERT INTO workouts
-                    (date, exercise, sets, reps, weight, duration, notes)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    (date, exercise, category, sets, reps, weight, duration, performance, notes)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         today,
                         item["exercise"],
+                        category,
                         item["sets"],
                         item["reps"],
                         item["weight"],
                         item["duration"],
+                        performance,
                         item["notes"],
                     )
                 )

@@ -278,15 +278,67 @@ if page == "Log Workout":
 
 if page == "History":
 
-    st.subheader("Workout History")
+    st.subheader("📈 Performance History")
 
-    data = cursor.execute(
-        "SELECT * FROM workouts ORDER BY id DESC"
+    # Select category
+    category = st.selectbox(
+        "Choose training day",
+        ["Push", "Pull", "Legs", "Core"]
+    )
+
+    # Get exercises from selected category
+    exercises = cursor.execute(
+        """
+        SELECT DISTINCT exercise
+        FROM workouts
+        WHERE category = ?
+        ORDER BY exercise
+        """,
+        (category,)
     ).fetchall()
 
-    st.write(data)
+    exercises = [row[0] for row in exercises]
 
-st.divider()
+    if exercises:
+
+        exercise = st.selectbox(
+            "Choose exercise",
+            exercises
+        )
+
+        history = cursor.execute(
+            """
+            SELECT date, performance
+            FROM workouts
+            WHERE exercise = ?
+            ORDER BY date
+            """,
+            (exercise,)
+        ).fetchall()
+
+        if history:
+
+            st.subheader(f"{exercise} Progress")
+
+            dates = [row[0] for row in history]
+            scores = [row[1] for row in history]
+
+            chart_data = {
+                "Date": dates,
+                "Performance": scores
+            }
+
+            st.line_chart(
+                chart_data,
+                x="Date",
+                y="Performance"
+            )
+
+        else:
+            st.info("No data for this exercise yet.")
+
+    else:
+        st.info("No workouts recorded for this category.")
 
 if page == "Manage Exercises":
 

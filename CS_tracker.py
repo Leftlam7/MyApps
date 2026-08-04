@@ -238,15 +238,36 @@ if page == "Manage Exercises":
         st.success("Exercise added!")
 
 
+    st.subheader("Existing Exercises")
+
     exercise_data = cursor.execute(
         """
-        SELECT name, category
+        SELECT id, name, category
         FROM exercises
         ORDER BY category, name
         """
     ).fetchall()
 
-    st.table(exercise_data)
+    for exercise_id, name, category in exercise_data:
+
+        col1, col2 = st.columns([6, 1])
+
+        with col1:
+            st.write(f"**{name}** — {category}")
+
+        with col2:
+            if st.button("🗑️", key=f"delete_exercise_{exercise_id}"):
+
+                cursor.execute(
+                    "DELETE FROM exercises WHERE id = ?",
+                    (exercise_id,)
+                )
+
+                conn.commit()
+
+                st.success(f"{name} removed!")
+
+                st.rerun()
 
 if page == "Statistics":
 

@@ -140,7 +140,7 @@ if page == "Log Workout":
             
             notes = st.text_area("Notes", key=f"{category}_notes")
    
-            if st.button("➕ Add Exercise"):
+            if st.button("➕ Add Exercise", key=f"{category}_add"):
                 st.session_state.current_workout.append(
                     {"exercise": exercise, "sets": sets, "reps": reps, "weight": weight, "duration": duration, "notes": notes,}
                 )

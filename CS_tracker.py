@@ -286,6 +286,15 @@ if page == "History":
         ["Push", "Pull", "Legs", "Core"]
     )
 
+    formulas = {
+        "Push": "25% Sets + 45% Reps + 20% Weight + 10% Duration",
+        "Pull": "25% Sets + 40% Reps + 25% Weight + 10% Duration",
+        "Legs": "25% Sets + 50% Reps + 15% Weight + 10% Duration",
+        "Core": "20% Sets + 20% Reps + 60% Duration",
+    }
+    
+    st.info(f"Performance formula: {formulas[category]}")
+    
     # Get exercises from selected category
     exercises = cursor.execute(
         """
@@ -322,7 +331,36 @@ if page == "History":
 
             dates = [row[0] for row in history]
             scores = [row[1] for row in history]
-
+            
+            # Statistics
+            best_score = max(scores)
+            first_score = scores[0]
+            latest_score = scores[-1]
+        
+            if first_score > 0:
+                improvement = ((latest_score - first_score) / first_score) * 100
+            else:
+                improvement = 0
+        
+            col1, col2, col3 = st.columns(3)
+        
+            with col1:
+                st.metric(
+                    "🏆 Best Performance",
+                    f"{best_score:.1f}"
+                )
+        
+            with col2:
+                st.metric(
+                    "📈 Improvement",
+                    f"{improvement:+.1f}%"
+                )
+        
+            with col3:
+                st.metric(
+                    "📅 Sessions",
+                    len(scores)
+                )
             chart_data = {
                 "Date": dates,
                 "Performance": scores

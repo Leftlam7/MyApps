@@ -56,7 +56,7 @@ conn.commit()
 #create SQLite table workouts
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS workouts (
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
     date TEXT,
     exercise TEXT,
@@ -315,7 +315,15 @@ if page == "Log Workout":
    
             if st.button("➕ Add Exercise", key=f"{category}_add"):
                 st.session_state.current_workout.append(
-                    {"exercise": exercise, "sets": sets, "reps": reps, "weight": weight, "duration": duration, "notes": notes,}
+                    {
+                        "exercise": exercise,
+                        "category": category,
+                        "sets": sets,
+                        "reps": reps,
+                        "weight": weight,
+                        "duration": duration,
+                        "notes": notes,
+                    }
                 )
         
                 st.success(f"{exercise} added to workout!")
@@ -351,14 +359,11 @@ if page == "Log Workout":
             today = date.today().isoformat()
         
             try:
-                with conn:
+                with sqlite3.connect(DB_PATH) as conn:
         
                     for item in st.session_state.current_workout:
         
-                        category = cursor.execute(
-                            "SELECT category FROM exercises WHERE name = ?",
-                            (item["exercise"],)
-                        ).fetchone()[0]
+                        category = item["category"]
         
                         performance = calculate_performance(
                             category,
@@ -389,7 +394,7 @@ if page == "Log Workout":
         
                 st.session_state.current_workout = []
                 st.success("Workout saved! 💪")
-        
+                st.rerun()
             except sqlite3.Error as e:
                 st.error(f"Database error: {e}")
 
@@ -600,8 +605,6 @@ if page == "Settings":
         conn.commit()
     
         st.success("Your workout history has been deleted.")
-
-        st.success("All workout history has been deleted.")
 
     st.divider()
 

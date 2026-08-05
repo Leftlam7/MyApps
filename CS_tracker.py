@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 from datetime import date
 import os
+import pandas as pd
 
 DB_PATH = os.path.join(
     os.path.dirname(__file__),
@@ -322,10 +323,15 @@ if page == "History":
 
         history = cursor.execute(
             """
-            SELECT date, performance
+            SELECT 
+                date,
+                sets,
+                reps,
+                weight,
+                duration,
+                performance
             FROM workouts
             WHERE exercise = ?
-            AND performance IS NOT NULL
             ORDER BY date
             """,
             (exercise,)
@@ -335,9 +341,23 @@ if page == "History":
 
             st.subheader(f"{exercise} Progress")
 
-            dates = [row[0] for row in history]
-            scores = [row[1] for row in history if row[1] is not None]
-            
+            df = pd.DataFrame(
+                history,
+                columns=[
+                    "Date",
+                    "Sets",
+                    "Reps",
+                    "Weight (kg)",
+                    "Duration (s)",
+                    "Performance"
+                ]
+            )
+        
+            st.dataframe(
+                df,
+                use_container_width=True,
+                hide_index=True
+            )
             # Statistics
             best_score = max(scores)
             first_score = scores[0]
@@ -367,16 +387,6 @@ if page == "History":
                     "📅 Sessions",
                     len(scores)
                 )
-            chart_data = {
-                "Date": dates,
-                "Performance": scores
-            }
-
-            st.line_chart(
-                chart_data,
-                x="Date",
-                y="Performance"
-            )
 
         else:
             st.info("No data for this exercise yet.")

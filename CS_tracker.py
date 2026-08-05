@@ -9,6 +9,9 @@ DB_PATH = os.path.join(
     "workouts.db"
 )
 
+if os.path.exists(DB_PATH):
+    os.remove(DB_PATH)
+    
 @st.cache_resource
 def get_connection():
     return sqlite3.connect(

@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 conn.commit()
 
+cursor.execute("""
 CREATE TABLE IF NOT EXISTS profile (
     id INTEGER PRIMARY KEY,
     name TEXT,
@@ -49,6 +50,8 @@ CREATE TABLE IF NOT EXISTS profile (
     weight REAL,
     goal TEXT
 )
+""")
+conn.commit()
 
 #create SQLite table workouts
 cursor.execute("""

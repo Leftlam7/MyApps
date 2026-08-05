@@ -147,7 +147,7 @@ if "current_workout" not in st.session_state:
 st.title("💪 Calisthenics Tracker")
 
 page = st.sidebar.radio("Menu",
-    ["Log Workout", "History", "Manage Exercises", "Statistics"])
+    ["Log Workout", "History", "Manage Exercises", "Statistics", "Settings"])
 
 push_exercises = [
     row[0]
@@ -453,3 +453,53 @@ if page == "Statistics":
         "Total Workouts",
         total_workouts
     )
+if page == "Settings":
+
+    st.subheader("⚙️ Settings")
+
+    st.warning(
+        "The actions below permanently modify your data. "
+        "These actions cannot be undone."
+    )
+
+    st.divider()
+
+    st.subheader("🗑️ Delete Workout History")
+
+    if st.button("Delete All Workout History", type="primary"):
+
+        cursor.execute("DELETE FROM workouts")
+        conn.commit()
+
+        st.success("All workout history has been deleted.")
+
+    st.divider()
+
+    st.subheader("🔄 Reset Application")
+
+    st.write(
+        "This will:"
+        "\n- Delete all workout history"
+        "\n- Remove all custom exercises"
+        "\n- Restore the default exercise list"
+    )
+
+    if st.button("Reset Everything"):
+
+        cursor.execute("DELETE FROM workouts")
+
+        cursor.execute("DELETE FROM exercises")
+
+        cursor.executemany(
+            """
+            INSERT INTO exercises (name, category)
+            VALUES (?, ?)
+            """,
+            default_exercises
+        )
+
+        conn.commit()
+
+        st.success("Application has been reset to default.")
+
+        st.rerun()

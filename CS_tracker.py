@@ -482,7 +482,8 @@ if page == "History":
             st.dataframe(
                 df,
                 use_container_width=True,
-                hide_index=True
+                hide_index=True,
+                height=250
             )
 
             st.subheader("Performance Trend")

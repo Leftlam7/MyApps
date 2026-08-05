@@ -1,6 +1,24 @@
 import streamlit as st
 import sqlite3
 from datetime import date
+import os
+
+DB_PATH = os.path.join(
+    os.path.dirname(__file__),
+    "workouts.db"
+)
+
+@st.cache_resource
+def get_connection():
+    return sqlite3.connect(
+        DB_PATH,
+        check_same_thread=False
+    )
+
+conn = get_connection()
+cursor = conn.cursor()
+
+cursor.execute("PRAGMA journal_mode=WAL;")
 
 ##  Configuring the page
 st.set_page_config(page_title="SthenoS", page_icon="💪", layout="centered")
@@ -10,9 +28,7 @@ st.markdown("""
 <meta name="theme-color" content="#000000">
 """, unsafe_allow_html=True)
 
-# Connecting to the database
-conn = sqlite3.connect("workouts.db")
-cursor = conn.cursor() #create cursor
+cursor.execute("PRAGMA journal_mode=WAL;")
 
 #create SQLite table workouts
 cursor.execute("""
@@ -31,19 +47,6 @@ CREATE TABLE IF NOT EXISTS workouts (
 """)
 
 conn.commit() #saves changes after creating table
-
-# Add new columns if they don't exist
-try:
-    cursor.execute("ALTER TABLE workouts ADD COLUMN category TEXT")
-except sqlite3.OperationalError:
-    pass
-
-try:
-    cursor.execute("ALTER TABLE workouts ADD COLUMN performance REAL")
-except sqlite3.OperationalError:
-    pass
-
-conn.commit()
 
 #create SQLite exersise table
 cursor.execute("""
@@ -214,7 +217,7 @@ if page == "Log Workout":
     else:
         for i, item in enumerate(st.session_state.current_workout):
 
-            col1, col2 = st.columns([6, 1])
+            col1, col2 = st.columns([5, 1])
     
             with col1:
                 st.write(
@@ -232,49 +235,51 @@ if page == "Log Workout":
     if st.session_state.current_workout:
     
         if st.button("💾 Save Workout"):
-    
+        
             today = date.today().isoformat()
-    
-            for item in st.session_state.current_workout:
-                # Get exercise category
-                category = cursor.execute(
-                    "SELECT category FROM exercises WHERE name = ?",
-                    (item["exercise"],)
-                ).fetchone()[0]
-            
-                # Calculate performance score
-                performance = calculate_performance(
-                    category,
-                    item["sets"],
-                    item["reps"],
-                    item["weight"],
-                    item["duration"]
-                )
-
-                cursor.execute(
-                    """
-                    INSERT INTO workouts
-                    (date, exercise, category, sets, reps, weight, duration, performance, notes)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        today,
-                        item["exercise"],
-                        category,
-                        item["sets"],
-                        item["reps"],
-                        item["weight"],
-                        item["duration"],
-                        performance,
-                        item["notes"],
-                    )
-                )
-    
-            conn.commit()
-    
-            st.session_state.current_workout = []
-    
-            st.success("Workout saved! 💪")
+        
+            try:
+                with conn:
+        
+                    for item in st.session_state.current_workout:
+        
+                        category = cursor.execute(
+                            "SELECT category FROM exercises WHERE name = ?",
+                            (item["exercise"],)
+                        ).fetchone()[0]
+        
+                        performance = calculate_performance(
+                            category,
+                            item["sets"],
+                            item["reps"],
+                            item["weight"],
+                            item["duration"]
+                        )
+        
+                        cursor.execute(
+                            """
+                            INSERT INTO workouts
+                            (date, exercise, category, sets, reps, weight, duration, performance, notes)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                today,
+                                item["exercise"],
+                                category,
+                                item["sets"],
+                                item["reps"],
+                                item["weight"],
+                                item["duration"],
+                                performance,
+                                item["notes"],
+                            )
+                        )
+        
+                st.session_state.current_workout = []
+                st.success("Workout saved! 💪")
+        
+            except sqlite3.Error as e:
+                st.error(f"Database error: {e}")
 
 if page == "History":
 

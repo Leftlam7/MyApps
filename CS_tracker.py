@@ -479,11 +479,9 @@ if page == "History":
                 ]
             )
         
-            st.dataframe(
-                df,
-                use_container_width=True,
-                hide_index=True,
-                height=250
+            st.markdown(
+                df.to_html(index=False),
+                unsafe_allow_html=True
             )
 
             st.subheader("Performance Trend")
@@ -651,3 +649,53 @@ if page == "Settings":
         st.success("Application has been reset to default.")
 
         st.rerun()
+        
+        st.divider()
+    
+        st.subheader("⚠️ Delete Account")
+    
+        st.warning(
+            "This will permanently delete your account and all your workout data. "
+            "This action cannot be undone."
+        )
+    
+        if st.button("Delete My Account", type="primary"):
+    
+            user_id = st.session_state.user["id"]
+    
+            # Delete user's workouts
+            cursor.execute(
+                """
+                DELETE FROM workouts
+                WHERE user_id = ?
+                """,
+                (user_id,)
+            )
+    
+            # Delete user's profile if exists
+            cursor.execute(
+                """
+                DELETE FROM profile
+                WHERE id = ?
+                """,
+                (user_id,)
+            )
+    
+            # Delete user account
+            cursor.execute(
+                """
+                DELETE FROM users
+                WHERE id = ?
+                """,
+                (user_id,)
+            )
+    
+            conn.commit()
+    
+            # Logout after deletion
+            st.session_state.user = None
+            st.session_state.current_workout = []
+    
+            st.success("Account deleted successfully.")
+    
+            st.rerun()

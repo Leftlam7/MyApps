@@ -31,10 +31,30 @@ st.markdown("""
 
 cursor.execute("PRAGMA journal_mode=WAL;")
 
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE,
+    password TEXT
+)
+""")
+
+conn.commit()
+
+CREATE TABLE IF NOT EXISTS profile (
+    id INTEGER PRIMARY KEY,
+    name TEXT,
+    age INTEGER,
+    height REAL,
+    weight REAL,
+    goal TEXT
+)
+
 #create SQLite table workouts
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS workouts (
     id INTEGER PRIMARY KEY,
+    user_id INTEGER,
     date TEXT,
     exercise TEXT,
     category TEXT,
@@ -142,13 +162,101 @@ def calculate_performance(category, sets, reps, weight, duration):
 
     return round(score * 100, 2)
 
+if "user" not in st.session_state:
+    st.session_state.user = None
+    
 if "current_workout" not in st.session_state:
     st.session_state.current_workout = []
-    
+
+if st.session_state.user is None:
+
+    st.title("💪 Welcome to SthenoS")
+
+    login_tab, register_tab = st.tabs(
+        ["Login", "Create Account"]
+    )
+
+    with register_tab:
+
+        username = st.text_input("Username")
+        password = st.text_input(
+            "Password",
+            type="password"
+        )
+
+        if st.button("Create Account"):
+
+            try:
+                cursor.execute(
+                    """
+                    INSERT INTO users(username,password)
+                    VALUES (?,?)
+                    """,
+                    (username,password)
+                )
+
+                conn.commit()
+
+                st.success("Account created!")
+
+            except sqlite3.IntegrityError:
+                st.error("Username already exists")
+
+
+    with login_tab:
+
+        username = st.text_input(
+            "Username",
+            key="login_user"
+        )
+
+        password = st.text_input(
+            "Password",
+            type="password",
+            key="login_pass"
+        )
+
+        if st.button("Login"):
+
+            user = cursor.execute(
+                """
+                SELECT id, username
+                FROM users
+                WHERE username=?
+                AND password=?
+                """,
+                (username,password)
+            ).fetchone()
+
+
+            if user:
+
+                st.session_state.user = {
+                    "id": user[0],
+                    "username": user[1]
+                }
+
+                st.rerun()
+
+            else:
+                st.error("Wrong login")
+
+
+    st.stop()
+
+
 st.title("💪 Calisthenics Tracker")
 
+st.sidebar.write(
+    f"👤 {st.session_state.user['username']}"
+)
+
+if st.sidebar.button("Logout"):
+    st.session_state.user = None
+    st.rerun()
+    
 page = st.sidebar.radio("Menu",
-    ["Log Workout", "History", "Manage Exercises", "Statistics", "Settings"])
+    ["Log Workout", "History", "Manage Exercises", "Settings"])
 
 push_exercises = [
     row[0]
@@ -260,10 +368,10 @@ if page == "Log Workout":
                         cursor.execute(
                             """
                             INSERT INTO workouts
-                            (date, exercise, category, sets, reps, weight, duration, performance, notes)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            (user_id, date, exercise, category, sets, reps, weight, duration, performance, notes)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             """,
-                            (
+                            (st.session_state.user["id"],
                                 today,
                                 item["exercise"],
                                 category,
@@ -307,9 +415,10 @@ if page == "History":
         SELECT DISTINCT exercise
         FROM workouts
         WHERE category = ?
+        AND user_id = ?
         ORDER BY exercise
         """,
-        (category,)
+        (category, st.session_state.user["id"])
     ).fetchall()
 
     exercises = [row[0] for row in exercises]
@@ -332,9 +441,10 @@ if page == "History":
                 performance
             FROM workouts
             WHERE exercise = ?
+            AND user_id = ?
             ORDER BY date
             """,
-            (exercise,)
+            (exercise, st.session_state.user["id"])
         ).fetchall()
 
         if history:
@@ -461,18 +571,6 @@ if page == "Manage Exercises":
 
                 st.rerun()
 
-if page == "Statistics":
-
-    st.subheader("📊 Statistics")
-
-    total_workouts = cursor.execute(
-        "SELECT COUNT(*) FROM workouts"
-    ).fetchone()[0]
-
-    st.metric(
-        "Total Workouts",
-        total_workouts
-    )
 if page == "Settings":
 
     st.subheader("⚙️ Settings")
@@ -486,10 +584,19 @@ if page == "Settings":
 
     st.subheader("🗑️ Delete Workout History")
 
-    if st.button("Delete All Workout History", type="primary"):
-
-        cursor.execute("DELETE FROM workouts")
+    if st.button("Delete My Workout History", type="primary"):
+    
+        cursor.execute(
+            """
+            DELETE FROM workouts
+            WHERE user_id = ?
+            """,
+            (st.session_state.user["id"],)
+        )
+    
         conn.commit()
+    
+        st.success("Your workout history has been deleted.")
 
         st.success("All workout history has been deleted.")
 
@@ -506,7 +613,13 @@ if page == "Settings":
 
     if st.button("Reset Everything"):
 
-        cursor.execute("DELETE FROM workouts")
+        cursor.execute(
+            """
+            DELETE FROM workouts
+            WHERE user_id = ?
+            """,
+            (st.session_state.user["id"],)
+        )
 
         cursor.execute("DELETE FROM exercises")
 

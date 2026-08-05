@@ -358,11 +358,21 @@ if page == "History":
                 use_container_width=True,
                 hide_index=True
             )
+
+            st.subheader("Performance Trend")
+            
+            st.line_chart(
+                df,
+                x="Date",
+                y="Performance"
+            )
             # Statistics
+            scores = df["Performance"].tolist()
+            
             best_score = max(scores)
             first_score = scores[0]
             latest_score = scores[-1]
-        
+            
             if first_score > 0:
                 improvement = ((latest_score - first_score) / first_score) * 100
             else:

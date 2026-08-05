@@ -368,8 +368,7 @@ if page == "Log Workout":
             today = date.today().isoformat()
         
             try:
-                with sqlite3.connect(DB_PATH) as conn:
-        
+                with conn:
                     for item in st.session_state.current_workout:
         
                         category = item["category"]

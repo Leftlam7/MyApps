@@ -8,9 +8,6 @@ DB_PATH = os.path.join(
     os.path.dirname(__file__),
     "workouts.db"
 )
-
-if os.path.exists(DB_PATH):
-    os.remove(DB_PATH)
     
 @st.cache_resource
 def get_connection():

@@ -566,25 +566,29 @@ if page == "Manage Exercises":
     ).fetchall()
 
     for exercise_id, name, category in exercise_data:
-
+    
         col1, col2 = st.columns([6, 1])
-
+    
         with col1:
             st.write(f"**{name}** — {category}")
-
+    
         with col2:
-            if st.button("🗑️", key=f"delete_exercise_{exercise_id}"):
-
-                cursor.execute(
-                    "DELETE FROM exercises WHERE id = ?",
-                    (exercise_id,)
-                )
-
-                conn.commit()
-
-                st.success(f"{name} removed!")
-
-                st.rerun()
+    
+            # Only show delete button for custom exercises
+            if (name, category) not in default_exercises:
+    
+                if st.button("🗑️", key=f"delete_exercise_{exercise_id}"):
+    
+                    cursor.execute(
+                        "DELETE FROM exercises WHERE id = ?",
+                        (exercise_id,)
+                    )
+    
+                    conn.commit()
+    
+                    st.success(f"{name} removed!")
+    
+                    st.rerun()
 
 if page == "Settings":
 
@@ -650,52 +654,52 @@ if page == "Settings":
 
         st.rerun()
         
-        st.divider()
-    
-        st.subheader("⚠️ Delete Account")
-    
-        st.warning(
-            "This will permanently delete your account and all your workout data. "
-            "This action cannot be undone."
+    st.divider()
+
+    st.subheader("⚠️ Delete Account")
+
+    st.warning(
+        "This will permanently delete your account and all your workout data. "
+        "This action cannot be undone."
+    )
+
+    if st.button("Delete My Account", type="primary"):
+
+        user_id = st.session_state.user["id"]
+
+        # Delete user's workouts
+        cursor.execute(
+            """
+            DELETE FROM workouts
+            WHERE user_id = ?
+            """,
+            (user_id,)
         )
-    
-        if st.button("Delete My Account", type="primary"):
-    
-            user_id = st.session_state.user["id"]
-    
-            # Delete user's workouts
-            cursor.execute(
-                """
-                DELETE FROM workouts
-                WHERE user_id = ?
-                """,
-                (user_id,)
-            )
-    
-            # Delete user's profile if exists
-            cursor.execute(
-                """
-                DELETE FROM profile
-                WHERE id = ?
-                """,
-                (user_id,)
-            )
-    
-            # Delete user account
-            cursor.execute(
-                """
-                DELETE FROM users
-                WHERE id = ?
-                """,
-                (user_id,)
-            )
-    
-            conn.commit()
-    
-            # Logout after deletion
-            st.session_state.user = None
-            st.session_state.current_workout = []
-    
-            st.success("Account deleted successfully.")
-    
-            st.rerun()
+
+        # Delete user's profile if exists
+        cursor.execute(
+            """
+            DELETE FROM profile
+            WHERE id = ?
+            """,
+            (user_id,)
+        )
+
+        # Delete user account
+        cursor.execute(
+            """
+            DELETE FROM users
+            WHERE id = ?
+            """,
+            (user_id,)
+        )
+
+        conn.commit()
+
+        # Logout after deletion
+        st.session_state.user = None
+        st.session_state.current_workout = []
+
+        st.success("Account deleted successfully.")
+
+        st.rerun()

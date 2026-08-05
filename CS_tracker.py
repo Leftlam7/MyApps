@@ -7,7 +7,7 @@ import pandas as pd
 DB_PATH = os.path.join(
     os.path.dirname(__file__),
     "workouts.db"
-)
+) 
     
 @st.cache_resource
 def get_connection():

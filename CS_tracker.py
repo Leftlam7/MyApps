@@ -72,6 +72,15 @@ CREATE TABLE IF NOT EXISTS workouts (
 
 conn.commit() #saves changes after creating table
 
+# temporary database fix
+columns = [row[1] for row in cursor.execute("PRAGMA table_info(workouts)")]
+
+if "user_id" not in columns:
+    cursor.execute(
+        "ALTER TABLE workouts ADD COLUMN user_id INTEGER"
+    )
+    conn.commit()
+    
 #create SQLite exersise table
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS exercises (

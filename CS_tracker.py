@@ -292,32 +292,34 @@ if st.sidebar.button("Logout"):
 page = st.sidebar.radio("Menu",
     ["Log Workout", "History", "Manage Exercises", "Settings"])
 
+exercise_result = supabase.table("exercises").select(
+    "name, category"
+).execute()
+
+all_exercises = exercise_result.data
+
 push_exercises = [
-    row[0]
-    for row in cursor.execute(
-        "SELECT name FROM exercises WHERE category='Push'"
-    ).fetchall()
+    item["name"]
+    for item in all_exercises
+    if item["category"] == "Push"
 ]
 
 pull_exercises = [
-    row[0]
-    for row in cursor.execute(
-        "SELECT name FROM exercises WHERE category='Pull'"
-    ).fetchall()
+    item["name"]
+    for item in all_exercises
+    if item["category"] == "Pull"
 ]
 
 leg_exercises = [
-    row[0]
-    for row in cursor.execute(
-        "SELECT name FROM exercises WHERE category='Legs'"
-    ).fetchall()
+    item["name"]
+    for item in all_exercises
+    if item["category"] == "Legs"
 ]
 
 core_exercises = [
-    row[0]
-    for row in cursor.execute(
-        "SELECT name FROM exercises WHERE category='Core'"
-    ).fetchall()
+    item["name"]
+    for item in all_exercises
+    if item["category"] == "Core"
 ]
 
 if page == "Log Workout":

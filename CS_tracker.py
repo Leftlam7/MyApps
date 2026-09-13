@@ -3,6 +3,8 @@ import sqlite3
 from datetime import date
 import os
 import pandas as pd
+from supabase import create_client
+
 
 DB_PATH = os.path.join(
     os.path.dirname(__file__),

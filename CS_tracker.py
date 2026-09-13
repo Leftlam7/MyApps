@@ -16,7 +16,6 @@ try:
 except Exception as e:
     st.error(f"Supabase connection failed: {e}")
     
-
 DB_PATH = os.path.join(
     os.path.dirname(__file__),
     "workouts.db"

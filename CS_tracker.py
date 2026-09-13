@@ -5,6 +5,17 @@ import os
 import pandas as pd
 from supabase import create_client
 
+supabase = create_client(
+    st.secrets["supabase"]["https://anscrqiyghzikjetayuv.supabase.co/rest/v1/"],
+    st.secrets["supabase"]["sb_publishable_ljBgPdzXfbIYtiW4BfZxlw_YdOHuTiD"]
+)
+
+try:
+    supabase.table("users").select("*").limit(1).execute()
+    st.success("Supabase connection works!")
+except Exception as e:
+    st.error(f"Supabase connection failed: {e}")
+    
 
 DB_PATH = os.path.join(
     os.path.dirname(__file__),

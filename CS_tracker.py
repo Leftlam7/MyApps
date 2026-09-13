@@ -11,15 +11,11 @@ supabase = create_client(
 )
 
 try:
-    supabase.table("exercises").insert({
-        "name": "TEST EXERCISE",
-        "category": "Push"
-    }).execute()
-
-    st.success("Supabase can write data!")
+    result = supabase.table("exercises").select("*").execute()
+    st.success(f"Supabase read works! Found {len(result.data)} exercises.")
 
 except Exception as e:
-    st.error(f"Supabase write failed: {e}")
+    st.error(f"Supabase read failed: {e}")
     
 DB_PATH = os.path.join(
     os.path.dirname(__file__),

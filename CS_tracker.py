@@ -6,8 +6,8 @@ import pandas as pd
 from supabase import create_client
 
 supabase = create_client(
-    st.secrets["supabase"]["https://anscrqiyghzikjetayuv.supabase.co/rest/v1/"],
-    st.secrets["supabase"]["sb_publishable_ljBgPdzXfbIYtiW4BfZxlw_YdOHuTiD"]
+    st.secrets["supabase"]["url"],
+    st.secrets["supabase"]["key"]
 )
 
 try:

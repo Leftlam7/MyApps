@@ -133,6 +133,15 @@ default_exercises = [
     ("Bicycle Crunches", "Core"),
 ]
 
+for name, category in default_exercises:
+    supabase.table("exercises").upsert(
+        {
+            "name": name,
+            "category": category
+        },
+        on_conflict="name"
+    ).execute()
+
 cursor.executemany(
     """
     INSERT OR IGNORE INTO exercises (name, category)

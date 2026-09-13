@@ -405,7 +405,7 @@ if page == "Log Workout":
     
         except Exception as e:
             st.error(f"Supabase workout write failed: {e}")
-        if st.session_state.current_workout:
+    if st.session_state.current_workout:
     
         if st.button("💾 Save Workout"):
         

@@ -8,13 +8,6 @@ supabase = create_client(
     st.secrets["supabase"]["key"]
 )
 
-try:
-    result = supabase.table("exercises").select("*").execute()
-    st.success(f"Supabase read works! Found {len(result.data)} exercises.")
-
-except Exception as e:
-    st.error(f"Supabase read failed: {e}")
-
 ##  Configuring the page
 st.set_page_config(page_title="SthenoS", page_icon="💪", layout="centered")
 #accept html
@@ -291,26 +284,6 @@ if page == "Log Workout":
                     st.session_state.current_workout.pop(i)
                     st.rerun()
 
-
-    if st.button("🧪 Test Supabase Workout"):
-        try:
-            supabase.table("workouts").insert({
-                "user_id": st.session_state.user["id"],
-                "date": date.today().isoformat(),
-                "exercise": "TEST",
-                "category": "Push",
-                "sets": 1,
-                "reps": 1,
-                "weight": 0,
-                "duration": 0,
-                "performance": 0,
-                "notes": "Supabase test"
-            }).execute()
-    
-            st.success("Supabase workout write works!")
-    
-        except Exception as e:
-            st.error(f"Supabase workout write failed: {e}")
     if st.session_state.current_workout:
     
         if st.button("💾 Save Workout"):

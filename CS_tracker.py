@@ -434,18 +434,18 @@ if page == "History":
     st.info(f"Performance formula: {formulas[category]}")
     
     # Get exercises from selected category
-    exercises = cursor.execute(
-        """
-        SELECT DISTINCT exercise
-        FROM workouts
-        WHERE category = ?
-        AND user_id = ?
-        ORDER BY exercise
-        """,
-        (category, st.session_state.user["id"])
-    ).fetchall()
-
-    exercises = [row[0] for row in exercises]
+    exercise_result = supabase.table("workouts") \
+        .select("exercise") \
+        .eq("category", category) \
+        .eq("user_id", st.session_state.user["id"]) \
+        .execute()
+    
+    exercises = sorted(
+        list(set(
+            row["exercise"]
+            for row in exercise_result.data
+        ))
+    )
 
     if exercises:
 
@@ -454,22 +454,26 @@ if page == "History":
             exercises
         )
 
-        history = cursor.execute(
-            """
-            SELECT 
-                date,
-                sets,
-                reps,
-                weight,
-                duration,
-                performance
-            FROM workouts
-            WHERE exercise = ?
-            AND user_id = ?
-            ORDER BY date
-            """,
-            (exercise, st.session_state.user["id"])
-        ).fetchall()
+        history_result = supabase.table("workouts") \
+            .select(
+                "date, sets, reps, weight, duration, performance"
+            ) \
+            .eq("exercise", exercise) \
+            .eq("user_id", st.session_state.user["id"]) \
+            .order("date") \
+            .execute()
+        
+        history = [
+            (
+                row["date"],
+                row["sets"],
+                row["reps"],
+                row["weight"],
+                row["duration"],
+                row["performance"]
+            )
+            for row in history_result.data
+        ]
 
         if history:
 

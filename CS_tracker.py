@@ -645,30 +645,42 @@ if page == "Settings":
     )
 
     if st.button("Reset Everything"):
-
-        cursor.execute(
-            """
-            DELETE FROM workouts
-            WHERE user_id = ?
-            """,
-            (st.session_state.user["id"],)
-        )
-
-        cursor.execute("DELETE FROM exercises")
-
-        cursor.executemany(
-            """
-            INSERT INTO exercises (name, category)
-            VALUES (?, ?)
-            """,
-            default_exercises
-        )
-
-        conn.commit()
-
-        st.success("Application has been reset to default.")
-
-        st.rerun()
+    
+        try:
+            # Delete this user's workout history
+            supabase.table("workouts") \
+                .delete() \
+                .eq("user_id", st.session_state.user["id"]) \
+                .execute()
+    
+            # Get all exercises currently in Supabase
+            exercise_result = supabase.table("exercises") \
+                .select("id, name, category") \
+                .execute()
+    
+            # Delete custom exercises
+            for exercise in exercise_result.data:
+                if (exercise["name"], exercise["category"]) not in default_exercises:
+                    supabase.table("exercises") \
+                        .delete() \
+                        .eq("id", exercise["id"]) \
+                        .execute()
+    
+            # Restore all default exercises
+            for name, category in default_exercises:
+                supabase.table("exercises").upsert(
+                    {
+                        "name": name,
+                        "category": category
+                    },
+                    on_conflict="name"
+                ).execute()
+    
+            st.success("Application has been reset to default.")
+            st.rerun()
+    
+        except Exception as e:
+            st.error(f"Could not reset application: {e}")
         
     st.divider()
 

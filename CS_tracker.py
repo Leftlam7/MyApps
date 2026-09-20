@@ -1,7 +1,5 @@
 import streamlit as st
-import sqlite3
 from datetime import date
-import os
 import pandas as pd
 from supabase import create_client
 
@@ -16,21 +14,6 @@ try:
 
 except Exception as e:
     st.error(f"Supabase read failed: {e}")
-    
-DB_PATH = os.path.join(
-    os.path.dirname(__file__),
-    "workouts.db"
-) 
-    
-@st.cache_resource
-def get_connection():
-    return sqlite3.connect(
-        DB_PATH,
-        check_same_thread=False
-    )
-
-conn = get_connection()
-cursor = conn.cursor()
 
 ##  Configuring the page
 st.set_page_config(page_title="SthenoS", page_icon="💪", layout="centered")

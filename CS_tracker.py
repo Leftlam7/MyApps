@@ -32,8 +32,6 @@ def get_connection():
 conn = get_connection()
 cursor = conn.cursor()
 
-cursor.execute("PRAGMA journal_mode=WAL;")
-
 ##  Configuring the page
 st.set_page_config(page_title="SthenoS", page_icon="💪", layout="centered")
 #accept html
@@ -42,7 +40,6 @@ st.markdown("""
 <meta name="theme-color" content="#000000">
 """, unsafe_allow_html=True)
 
-cursor.execute("PRAGMA journal_mode=WAL;")
 
 default_exercises = [
     ("Push-ups", "Push"),

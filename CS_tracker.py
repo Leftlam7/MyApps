@@ -94,16 +94,6 @@ if "user_id" not in columns:
     )
     conn.commit()
     
-#create SQLite exersise table
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS exercises (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE,
-    category TEXT
-)
-""")
-
-conn.commit()
 
 default_exercises = [
     ("Push-ups", "Push"),
@@ -142,15 +132,7 @@ for name, category in default_exercises:
         on_conflict="name"
     ).execute()
 
-cursor.executemany(
-    """
-    INSERT OR IGNORE INTO exercises (name, category)
-    VALUES (?, ?)
-    """,
-    default_exercises,
-)
 
-conn.commit()
 
 def calculate_performance(category, sets, reps, weight, duration):
 
@@ -585,31 +567,35 @@ if page == "Manage Exercises":
     )
 
     if st.button("Add Exercise"):
-        cursor.execute(
-            """
-            INSERT OR IGNORE INTO exercises 
-            (name, category)
-            VALUES (?, ?)
-            """,
-            (new_name, new_category)
-        )
-
-        conn.commit()
-
-        st.success("Exercise added!")
+    
+        try:
+            supabase.table("exercises").insert({
+                "name": new_name,
+                "category": new_category
+            }).execute()
+    
+            st.success("Exercise added!")
+            st.rerun()
+    
+        except Exception as e:
+            st.error(f"Could not add exercise: {e}")
 
 
     st.subheader("Existing Exercises")
 
-    exercise_data = cursor.execute(
-        """
-        SELECT id, name, category
-        FROM exercises
-        ORDER BY category, name
-        """
-    ).fetchall()
+    exercise_result = supabase.table("exercises") \
+        .select("id, name, category") \
+        .order("category") \
+        .order("name") \
+        .execute()
+    
+    exercise_data = exercise_result.data
 
-    for exercise_id, name, category in exercise_data:
+    for exercise in exercise_data:
+
+        exercise_id = exercise["id"]
+        name = exercise["name"]
+        category = exercise["category"]
     
         col1, col2 = st.columns([6, 1])
     

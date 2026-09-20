@@ -44,35 +44,6 @@ st.markdown("""
 
 cursor.execute("PRAGMA journal_mode=WAL;")
 
-#create SQLite table workouts
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS workouts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    date TEXT,
-    exercise TEXT,
-    category TEXT,
-    sets INTEGER,
-    reps INTEGER,
-    weight REAL,
-    duration REAL,
-    performance REAL,
-    notes TEXT
-)
-""")
-
-conn.commit() #saves changes after creating table
-
-# temporary database fix
-columns = [row[1] for row in cursor.execute("PRAGMA table_info(workouts)")]
-
-if "user_id" not in columns:
-    cursor.execute(
-        "ALTER TABLE workouts ADD COLUMN user_id INTEGER"
-    )
-    conn.commit()
-    
-
 default_exercises = [
     ("Push-ups", "Push"),
     ("Dips", "Push"),

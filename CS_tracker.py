@@ -692,42 +692,28 @@ if page == "Settings":
     )
 
     if st.button("Delete My Account", type="primary"):
-
-        user_id = st.session_state.user["id"]
-
-        # Delete user's workouts
-        cursor.execute(
-            """
-            DELETE FROM workouts
-            WHERE user_id = ?
-            """,
-            (user_id,)
-        )
-
-        # Delete user's profile if exists
-        cursor.execute(
-            """
-            DELETE FROM profile
-            WHERE id = ?
-            """,
-            (user_id,)
-        )
-
-        # Delete user account
-        cursor.execute(
-            """
-            DELETE FROM users
-            WHERE id = ?
-            """,
-            (user_id,)
-        )
-
-        conn.commit()
-
-        # Logout after deletion
-        st.session_state.user = None
-        st.session_state.current_workout = []
-
-        st.success("Account deleted successfully.")
-
-        st.rerun()
+    
+        try:
+            user_id = st.session_state.user["id"]
+    
+            # Delete user's workouts
+            supabase.table("workouts") \
+                .delete() \
+                .eq("user_id", user_id) \
+                .execute()
+    
+            # Delete user account
+            supabase.table("users") \
+                .delete() \
+                .eq("id", user_id) \
+                .execute()
+    
+            # Log out
+            st.session_state.user = None
+            st.session_state.current_workout = []
+    
+            st.success("Account deleted successfully.")
+            st.rerun()
+    
+        except Exception as e:
+            st.error(f"Could not delete account: {e}")

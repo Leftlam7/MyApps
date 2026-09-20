@@ -394,43 +394,39 @@ if page == "Log Workout":
             today = date.today().isoformat()
         
             try:
-                with conn:
-                    for item in st.session_state.current_workout:
-        
-                        category = item["category"]
-        
-                        performance = calculate_performance(
-                            category,
-                            item["sets"],
-                            item["reps"],
-                            item["weight"],
-                            item["duration"]
-                        )
-        
-                        cursor.execute(
-                            """
-                            INSERT INTO workouts
-                            (user_id, date, exercise, category, sets, reps, weight, duration, performance, notes)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                            """,
-                            (st.session_state.user["id"],
-                                today,
-                                item["exercise"],
-                                category,
-                                item["sets"],
-                                item["reps"],
-                                item["weight"],
-                                item["duration"],
-                                performance,
-                                item["notes"],
-                            )
-                        )
-        
+            
+                for item in st.session_state.current_workout:
+            
+                    category = item["category"]
+            
+                    performance = calculate_performance(
+                        category,
+                        item["sets"],
+                        item["reps"],
+                        item["weight"],
+                        item["duration"]
+                    )
+            
+                    supabase.table("workouts").insert({
+                        "user_id": st.session_state.user["id"],
+                        "date": today,
+                        "exercise": item["exercise"],
+                        "category": category,
+                        "sets": item["sets"],
+                        "reps": item["reps"],
+                        "weight": item["weight"],
+                        "duration": item["duration"],
+                        "performance": performance,
+                        "notes": item["notes"]
+                    }).execute()
+            
                 st.session_state.current_workout = []
+            
                 st.success("Workout saved! 💪")
                 st.rerun()
-            except sqlite3.Error as e:
-                st.error(f"Database error: {e}")
+            
+            except Exception as e:
+                st.error(f"Could not save workout: {e}")
 
 if page == "History":
 
@@ -608,17 +604,18 @@ if page == "Manage Exercises":
             if (name, category) not in default_exercises:
     
                 if st.button("🗑️", key=f"delete_exercise_{exercise_id}"):
-    
-                    cursor.execute(
-                        "DELETE FROM exercises WHERE id = ?",
-                        (exercise_id,)
-                    )
-    
-                    conn.commit()
-    
-                    st.success(f"{name} removed!")
-    
-                    st.rerun()
+                
+                    try:
+                        supabase.table("exercises") \
+                            .delete() \
+                            .eq("id", exercise_id) \
+                            .execute()
+                
+                        st.success(f"{name} removed!")
+                        st.rerun()
+                
+                    except Exception as e:
+                        st.error(f"Could not delete exercise: {e}")
 
 if page == "Settings":
 

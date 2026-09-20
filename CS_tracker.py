@@ -219,34 +219,29 @@ if st.session_state.user is None:
         )
 
         if st.button("Login"):
-
-            user = cursor.execute(
-                """
-                SELECT id, username
-                FROM users
-                WHERE username=?
-                AND password=?
-                """,
-                (username,password)
-            ).fetchone()
-
-
-            if user:
-                # Make sure this user also exists in Supabase
-                supabase.table("users").upsert({
-                    "id": user[0],
-                    "username": user[1],
-                    "password": password
-                }).execute()
-            
-                st.session_state.user = {
-                    "id": user[0],
-                    "username": user[1]
-                }
-                st.rerun()
-
-            else:
-                st.error("Wrong login")
+        
+            try:
+                result = supabase.table("users") \
+                    .select("id, username") \
+                    .eq("username", username) \
+                    .eq("password", password) \
+                    .execute()
+        
+                if result.data:
+                    user = result.data[0]
+        
+                    st.session_state.user = {
+                        "id": user["id"],
+                        "username": user["username"]
+                    }
+        
+                    st.rerun()
+        
+                else:
+                    st.error("Wrong username or password")
+        
+            except Exception as e:
+                st.error(f"Could not log in: {e}")
 
 
     st.stop()

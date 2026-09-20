@@ -44,15 +44,6 @@ st.markdown("""
 
 cursor.execute("PRAGMA journal_mode=WAL;")
 
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
-    password TEXT
-)
-""")
-
-conn.commit()
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS profile (
@@ -201,22 +192,17 @@ if st.session_state.user is None:
         )
 
         if st.button("Create Account"):
-
+        
             try:
-                cursor.execute(
-                    """
-                    INSERT INTO users(username,password)
-                    VALUES (?,?)
-                    """,
-                    (username,password)
-                )
-
-                conn.commit()
-
+                supabase.table("users").insert({
+                    "username": username,
+                    "password": password
+                }).execute()
+        
                 st.success("Account created!")
-
-            except sqlite3.IntegrityError:
-                st.error("Username already exists")
+        
+            except Exception as e:
+                st.error(f"Could not create account: {e}")
 
 
     with login_tab:

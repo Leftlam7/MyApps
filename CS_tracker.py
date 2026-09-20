@@ -622,17 +622,16 @@ if page == "Settings":
 
     if st.button("Delete My Workout History", type="primary"):
     
-        cursor.execute(
-            """
-            DELETE FROM workouts
-            WHERE user_id = ?
-            """,
-            (st.session_state.user["id"],)
-        )
+        try:
+            supabase.table("workouts") \
+                .delete() \
+                .eq("user_id", st.session_state.user["id"]) \
+                .execute()
     
-        conn.commit()
+            st.success("Your workout history has been deleted.")
     
-        st.success("Your workout history has been deleted.")
+        except Exception as e:
+            st.error(f"Could not delete workout history: {e}")
 
     st.divider()
 

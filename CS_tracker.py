@@ -44,19 +44,6 @@ st.markdown("""
 
 cursor.execute("PRAGMA journal_mode=WAL;")
 
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS profile (
-    id INTEGER PRIMARY KEY,
-    name TEXT,
-    age INTEGER,
-    height REAL,
-    weight REAL,
-    goal TEXT
-)
-""")
-conn.commit()
-
 #create SQLite table workouts
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS workouts (

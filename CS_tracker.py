@@ -246,12 +246,17 @@ if st.session_state.user is None:
 
 
             if user:
-
+                # Make sure this user also exists in Supabase
+                supabase.table("users").upsert({
+                    "id": user[0],
+                    "username": user[1],
+                    "password": password
+                }).execute()
+            
                 st.session_state.user = {
                     "id": user[0],
                     "username": user[1]
                 }
-
                 st.rerun()
 
             else:
